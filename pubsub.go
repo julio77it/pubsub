@@ -46,21 +46,21 @@ type streamImpl struct {
 }
 
 // Subscribe registers the interest to a topic and returns a channel
-func (sub *streamImpl) Subscribe(topic string) (<-chan interface{}, error) {
+func (stream *streamImpl) Subscribe(topic string) (<-chan interface{}, error) {
 	// topic validation
 	if err := validateTopic(topic); err != nil {
 		return nil, err
 	}
-	sub.mutex.Lock()
-	defer sub.mutex.Unlock()
+	stream.mutex.Lock()
+	defer stream.mutex.Unlock()
 
 	// check if already subscribed
-	if _, ok := sub.subscriptions[topic]; !ok {
-		sub.subscriptions[topic] = make([]chan interface{}, 0, 1)
+	if _, ok := stream.subscriptions[topic]; !ok {
+		stream.subscriptions[topic] = make([]chan interface{}, 0, 1)
 	}
 	// create new subscription
 	ch := make(chan interface{}, 1)
-	sub.subscriptions[topic] = append(sub.subscriptions[topic], ch)
+	stream.subscriptions[topic] = append(stream.subscriptions[topic], ch)
 
 	return ch, nil
 }
@@ -75,12 +75,12 @@ func find(slice []chan interface{}, element <-chan interface{}) int {
 }
 
 // Unsubscribe registers the uninterest to a topic, it closed the channel
-func (sub *streamImpl) Unsubscribe(topic string, ch <-chan interface{}) error {
-	sub.mutex.Lock()
-	defer sub.mutex.Unlock()
+func (stream *streamImpl) Unsubscribe(topic string, ch <-chan interface{}) error {
+	stream.mutex.Lock()
+	defer stream.mutex.Unlock()
 
 	// check if subscribed
-	chList, ok := sub.subscriptions[topic]
+	chList, ok := stream.subscriptions[topic]
 	if !ok {
 		return errors.New(fmt.Sprint("topic not subscribed"))
 	}
@@ -93,10 +93,10 @@ func (sub *streamImpl) Unsubscribe(topic string, ch <-chan interface{}) error {
 	close(chList[pos])
 
 	if len(chList) <= 1 {
-		delete(sub.subscriptions, topic)
+		delete(stream.subscriptions, topic)
 	} else {
 		// remove from slice
-		sub.subscriptions[topic] = append(sub.subscriptions[topic][:pos], sub.subscriptions[topic][pos+1:]...)
+		stream.subscriptions[topic] = append(stream.subscriptions[topic][:pos], stream.subscriptions[topic][pos+1:]...)
 	}
 	return nil
 }
@@ -137,7 +137,7 @@ func validateTopic(topic string) error {
 	// check valid chars
 	for _, c := range topic {
 		if chr := string(c); !strings.Contains(validchrs, chr) {
-			return errors.New(fmt.Sprintf("topic contains illegal char [%s]", chr))
+			return fmt.Errorf("topic contains illegal char [%s]", chr)
 		}
 	}
 	return nil
