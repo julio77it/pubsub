@@ -102,20 +102,20 @@ func (stream *streamImpl) Unsubscribe(topic string, ch <-chan interface{}) error
 }
 
 // Publish sends "something" to a grouped by topic bunch of channels
-func (pub *streamImpl) Publish(topic string, payload interface{}) error {
-	pub.mutex.RLock()
-	defer pub.mutex.RUnlock()
+func (stream *streamImpl) Publish(topic string, payload interface{}) error {
+	stream.mutex.RLock()
+	defer stream.mutex.RUnlock()
 
 	// topic validation
 	if err := validateTopic(topic); err != nil {
 		return err
 	}
 	// check if subscribed
-	if _, ok := pub.subscriptions[topic]; !ok {
+	if _, ok := stream.subscriptions[topic]; !ok {
 		return errors.New(fmt.Sprint("topic not subscribed"))
 	}
 	// fanout payload to subscriptions
-	for _, ch := range pub.subscriptions[topic] {
+	for _, ch := range stream.subscriptions[topic] {
 		ch <- payload
 	}
 	return nil
