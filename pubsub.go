@@ -32,12 +32,12 @@ type Stream interface {
 //
 // it permits virtually unlimited subscriptions to unlimited subjects
 func New() Stream {
-	return &___{
+	return &streamImpl{
 		subscriptions: map[string][]chan interface{}{},
 	}
 }
 
-type ___ struct {
+type streamImpl struct {
 	Stream
 
 	subscriptions map[string][]chan interface{}
@@ -46,7 +46,7 @@ type ___ struct {
 }
 
 // Subscribe registers the interest to a topic and returns a channel
-func (sub *___) Subscribe(topic string) (<-chan interface{}, error) {
+func (sub *streamImpl) Subscribe(topic string) (<-chan interface{}, error) {
 	// topic validation
 	if err := validateTopic(topic); err != nil {
 		return nil, err
@@ -75,7 +75,7 @@ func find(slice []chan interface{}, element <-chan interface{}) int {
 }
 
 // Unsubscribe registers the uninterest to a topic, it closed the channel
-func (sub *___) Unsubscribe(topic string, ch <-chan interface{}) error {
+func (sub *streamImpl) Unsubscribe(topic string, ch <-chan interface{}) error {
 	sub.mutex.Lock()
 	defer sub.mutex.Unlock()
 
@@ -102,7 +102,7 @@ func (sub *___) Unsubscribe(topic string, ch <-chan interface{}) error {
 }
 
 // Publish sends "something" to a grouped by topic bunch of channels
-func (pub *___) Publish(topic string, payload interface{}) error {
+func (pub *streamImpl) Publish(topic string, payload interface{}) error {
 	pub.mutex.RLock()
 	defer pub.mutex.RUnlock()
 

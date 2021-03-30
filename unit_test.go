@@ -142,12 +142,12 @@ func test(t *testing.T, table map[string]singleTest) {
 
 	wgc.Wait()
 
-	for subscription, occurences := range stats {
+	for subscription, occurrences := range stats {
 		test, ok := table[subscription]
 
 		assert.True(t, ok)
-		assert.Equal(t, test.ngo*test.nmsg, occurences)
-		fmt.Printf("%s Goro=%d Msgs=%d Processed=%d\n", subscription, test.ngo, test.nmsg, occurences)
+		assert.Equal(t, test.ngo*test.nmsg, occurrences)
+		fmt.Printf("%s Goro=%d Msgs=%d Processed=%d\n", subscription, test.ngo, test.nmsg, occurrences)
 	}
 	fmt.Printf("Took %s ---------------------\n\n", elapsed)
 }

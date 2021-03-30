@@ -22,11 +22,13 @@ var (
 	totalToRecv int
 )
 
+// Stat : per topic publish to subscribe elapsed time
 type Stat struct {
 	topic   string
 	elapsed time.Duration
 }
 
+// Avg : elapsed time average
 type Avg struct {
 	avg  time.Duration
 	msgs int
