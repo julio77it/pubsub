@@ -1,10 +1,10 @@
 package main
 
 import (
+	"crypto/rand"
 	"errors"
 	"flag"
 	"fmt"
-	"math/rand"
 	"sync"
 	"time"
 
@@ -42,7 +42,7 @@ func init() {
 }
 
 func publishOnTopic(topic string) {
-	stream.Publish(topic, time.Now())
+	_ = stream.Publish(topic, time.Now())
 	wgProd.Done()
 }
 
@@ -74,13 +74,15 @@ func subscribeTopic(topic string, nmsg int) {
 }
 
 func randomString(n uint) string {
-	letters := []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+	letters := []byte("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
-	b := make([]rune, n)
-	for i := range b {
-		b[i] = letters[rand.Intn(len(letters))]
+	slice := make([]byte, n)
+	_, _ = rand.Read(slice)
+
+	for i, b := range slice {
+		slice[i] = letters[int(b)%len(letters)]
 	}
-	return string(b)
+	return string(slice)
 }
 
 func average(in []time.Duration) time.Duration {
